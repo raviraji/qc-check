@@ -4,7 +4,8 @@ from datetime import datetime
 import psutil
 import subprocess
 from datetime import datetime
-
+import time
+import re
 url = "http://india.remoteiot.com:30136/upload"
 def get_device_name():
     config_path = "/etc/remote-iot/configure"
@@ -57,12 +58,17 @@ iMX = iMX_Module()
 
 def iMX_Serial():
     config_path = "/proc/cpuinfo"
+    config_path1 = "/sys/devices/soc0/soc_uid"
     try:
-        with open(config_path, "r") as file:
-            for line in file:
-                if line.startswith("Serial"):
-                    return line.strip().split(":", 1)[1]
-        return "Serial Number not found"
+        vALID = iMX_Module()
+        if vALID == "IMX7":
+           with open(config_path, "r") as file:
+             for line in file:
+                 if line.startswith("Serial"):
+                     return line.strip().split(":", 1)[1]
+        else:
+           with open(config_path1, "r") as file:
+                return file.read().strip()
     except Exception as e:
         return f"Error: {e}"
 iMX_SN = iMX_Serial()
@@ -70,48 +76,52 @@ iMX_SN = iMX_Serial()
 
 def LTE_IMEI():
     try:
-        output = subprocess.check_output(["mmcli -m 0"], text=True)
-        for line in output.splitlines():
-            if line.startswith("equipment id"):
-                return line.split(":", 1)[1].strip()
-        return "Unknown"
+        output = subprocess.run(["mmcli", "-m", "0"], capture_output=True, text=True)
+        RaW = re.search(r'equipment id:\s+(\w+)', output.stdout, re.IGNORECASE)
+        if RaW:
+           RaWout = RaW.group(1)
+           return RaWout
+        return "Not There"
     except Exception as e:
-        return f"NA"
+        return e
 imei = LTE_IMEI()
 #print("LTE IMEI No:",imei)
 
-def SIM_Status():
+def SIM_NuM():
     try:
-        output = subprocess.check_output(["mmcli -m 0"], text=True)
-        for line in output.splitlines():
-            if line.startswith("state"):
-                return line.split(":", 1)[1].strip()
-        return "Unknown"
+        output = subprocess.run(['mmcli', '-m', '0'], capture_output=True, text=True)
+        RaW = re.search(r'own:\s+(\w+)', output.stdout, re.IGNORECASE)
+        if RaW:
+           oUT = RaW.group(1)
+           return oUT
+        return "NoT There"
     except Exception as e:
-        return f"NA"
-Sim_Status = SIM_Status()
-#print("SIM Status:",Sim_Status)
-
+        return e
+Sim_number = SIM_NuM()
+#print("SIM Number:",Sim_number)
 
 def SIG_Status():
     try:
-        output = subprocess.check_output(["mmcli -m 0"], text=True)
-        for line in output.splitlines():
-            if line.startswith("signal quality"):
-                return line.split(":", 1)[1].strip()
-        return "Unknown"
+        result = subprocess.run(['mmcli', '-m', '0'], capture_output=True, text=True)
+        match = re.search(r'signal quality:\s+(\d+)%', result.stdout, re.IGNORECASE)
+        if match:
+            out = int(match.group(1))
+            return out
+        else:
+           return "Not available"
     except Exception as e:
-        return f"NA"
+         return e
 Sig_Status = SIG_Status()
-#print("Signal Strength:",Sig_Status)
+#print("Signal strength:",Sig_Status)
 
 def Operator_Status():
     try:
-        output = subprocess.check_output(["mmcli -m 0"], text=True)
-        for line in output.splitlines():
-            if line.startswith("operator name"):
-                return line.split(":", 1)[1].strip()
-        return "Not Available"
+        result = subprocess.run(["mmcli", "-m", "0"], capture_output=True, text=True)
+        match = re.search(r'operator name:\s+(\w+)', result.stdout, re.IGNORECASE)
+        if match:
+            out = match.group(1)
+            return out
+        return "Not There"
     except Exception as e:
         return f"NA"
 opr_Status = Operator_Status()
@@ -119,31 +129,31 @@ opr_Status = Operator_Status()
 
 def Lte_module():
     try:
-        output = subprocess.check_output(["mmcli -m 0"], text=True)
-        for line in output.splitlines():
-            if line.startswith("firmware revision"):
-                return line.split(":", 1)[1].strip()[:5]
-        return "Not Available"
+        output = subprocess.run(["mmcli", "-m", "0"], capture_output=True, text=True)
+        RaW = re.search(r'revision:\s+(\w+)', output.stdout, re.IGNORECASE)
+        if RaW:
+           RaW_out = RaW.group(1)[:5]
+           return RaW_out
+        return "Not there"
     except Exception as e:
-        return f"NA"
+        return e
 LTE_Module = Lte_module()
-#print("LTE Series:",LTE_Module)
+#print("LTE Type:",LTE_Module)
 
 def SDcard():
     try:
-        output = subprocess.check_output(["lsblk -o NAME,VENDOR,SIZE"], text=True)
+        output = subprocess.check_output(["lsblk"], capture_output=True, text=True)
         for line in output.splitlines():
-            if line.startswith("sda","sdb","mmcblk1"):
+            if line.strip().startswith(("mmcblk1", "sda", "sdb")):
                 parts = line.split()
-                if len(parts) >= 3:
-                    name, vendor, size = parts[0], parts[1], parts[2]
-                    return name, vendor, size
-        return ("Not Available", "Not Available", "Not Available")
+                if len(parts) >= 4:
+                    return parts[0], parts[1], parts[2], parts[3]
+            return "NOT THERE"
     except Exception as e:
-        return ("NA", "NA", "NA")
-SDname, SDvendor, SDsize = SDcard()
-#print("SD type:", SDvendor)
-#print("SD Card Size:", SDsize)
+        return ("NA", "NA", "NA", "NA")
+SDname, SDname2, Sname3, SDsize = SDcard()
+#print("SD Card Name:", SDname)
+#print("Size:", SDsize)
 
 
 Time = datetime.now().isoformat()
@@ -153,11 +163,11 @@ payload = {
     "IMX_Type": iMX,
     "IMX_Serial_No": iMX_SN,
     "IMX_IMEI": imei,
-    "SIM_Status": Sim_Status,
+    "SIM_Number": Sim_number,
     "SIM_Signal": Sig_Status,
     "SIM_Operator": opr_Status,
     "LTE_Module_Type": LTE_Module,
-    "SD_Card_Type": SDvendor,
+    "SD_Card_Type": SDname,
     "SD_Card_Size": SDsize,
     "UpdateTime":Time,
 }
