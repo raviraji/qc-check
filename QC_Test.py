@@ -51,22 +51,14 @@ def iMX_Module():
 iMX = iMX_Module()
 #print("iMX Status:",iMX)
 
-def iMX_Serial():
-    config_path = "/proc/cpuinfo"
-    config_path1 = "/sys/devices/soc0/soc_uid"
+def iMX_MAC():
+    path_MAC = "/sys/class/net/wlan0/address"
     try:
-        vALID = iMX_Module()
-        if vALID == "i.MX7D":
-           with open(config_path, "r") as file:
-             for line in file:
-                 if line.startswith("Serial"):
-                     return line.strip().split(":", 1)[1]
-        else:
-           with open(config_path1, "r") as file:
+           with open(path_MAC, "r") as file:
                 return file.read().strip()
     except Exception as e:
-        return f"Error: {e}"
-iMX_SN = iMX_Serial()
+        return "NA"
+iMX_SN = iMX_MAC()
 #print("iMX Serial No:", iMX_SN)
 
 def NeT_mAN():
