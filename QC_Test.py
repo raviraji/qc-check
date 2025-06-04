@@ -6,6 +6,15 @@ import subprocess
 from datetime import datetime
 import time
 import re
+import sys
+def import_module():
+    try:
+        import psutil
+    except ImportError:
+           subprocess.check_call([sys.executable, "-m", "pip", "install", "psutil"])
+           import psutil
+    return psutil
+psutil = import_module()
 url = "http://india.remoteiot.com:30060/upload"
 def get_device_name():
     config_path = "/etc/remote-iot/configure"
