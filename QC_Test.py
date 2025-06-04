@@ -69,9 +69,20 @@ def iMX_Serial():
 iMX_SN = iMX_Serial()
 #print("iMX Serial No:", iMX_SN)
 
+def NeT_mAN():
+    output = subprocess.run(["mmcli", "-L"], capture_output=True, text=True)
+    dATa = re.search(r'/Modem/(\d+)', output.stdout)
+    if dATa:
+       return dATa.group(1)
+    else:
+       return "Not get it"
+MaNOuT = NeT_mAN()
+#print(MaNOuT)
+
 def LTE_IMEI():
     try:
-        output = subprocess.run(["mmcli", "-m", "0"], capture_output=True, text=True)
+        read = NeT_mAN()
+        output = subprocess.run(["mmcli", "-m", read], capture_output=True, text=True)
         RaW = re.search(r'equipment id:\s+(\w+)', output.stdout, re.IGNORECASE)
         if RaW:
            RaWout = RaW.group(1)
@@ -84,7 +95,8 @@ imei = LTE_IMEI()
 
 def SIM_NuM():
     try:
-        output = subprocess.run(['mmcli', '-m', '0'], capture_output=True, text=True)
+        read = NeT_mAN()
+        output = subprocess.run(['mmcli', '-m', read], capture_output=True, text=True)
         RaW = re.search(r'own:\s+(\w+)', output.stdout, re.IGNORECASE)
         if RaW:
            oUT = RaW.group(1)
@@ -97,7 +109,8 @@ Sim_number = SIM_NuM()
 
 def SIG_Status():
     try:
-        result = subprocess.run(['mmcli', '-m', '0'], capture_output=True, text=True)
+        read = NeT_mAN()
+        result = subprocess.run(['mmcli', '-m', read], capture_output=True, text=True)
         match = re.search(r'signal quality:\s+(\d+)%', result.stdout, re.IGNORECASE)
         if match:
             out = int(match.group(1))
@@ -111,7 +124,8 @@ Sig_Status = SIG_Status()
 
 def Operator_Status():
     try:
-        result = subprocess.run(["mmcli", "-m", "0"], capture_output=True, text=True)
+        read = NeT_mAN()
+        result = subprocess.run(["mmcli", "-m", read], capture_output=True, text=True)
         match = re.search(r'operator name:\s+(\w+)', result.stdout, re.IGNORECASE)
         if match:
             out = match.group(1)
@@ -124,7 +138,8 @@ opr_Status = Operator_Status()
 
 def Lte_module():
     try:
-        output = subprocess.run(["mmcli", "-m", "0"], capture_output=True, text=True)
+        read = NeT_mAN()
+        output = subprocess.run(["mmcli", "-m", read], capture_output=True, text=True)
         RaW = re.search(r'revision:\s+(\w+)', output.stdout, re.IGNORECASE)
         if RaW:
            RaW_out = RaW.group(1)[:5]
