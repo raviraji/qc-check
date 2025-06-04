@@ -56,7 +56,7 @@ def iMX_Serial():
     config_path1 = "/sys/devices/soc0/soc_uid"
     try:
         vALID = iMX_Module()
-        if vALID == "i.MX7MM":
+        if vALID == "i.MX7D":
            with open(config_path, "r") as file:
              for line in file:
                  if line.startswith("Serial"):
