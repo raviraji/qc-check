@@ -6,7 +6,7 @@ import subprocess
 from datetime import datetime
 import time
 import re
-url = "http://india.remoteiot.com:30136/upload"
+url = "http://india.remoteiot.com:30060/upload"
 def get_device_name():
     config_path = "/etc/remote-iot/configure"
     try:
@@ -142,18 +142,18 @@ LTE_Module = Lte_module()
 
 def SDcard():
     try:
-        output = subprocess.check_output(["lsblk"], capture_output=True, text=True)
-        for line in output.splitlines():
-            if line.strip().startswith(("mmcblk1", "sda", "sdb")):
-                parts = line.split()
-                if len(parts) >= 4:
-                    return parts[0], parts[1], parts[2], parts[3]
-            return "NOT THERE"
+        output = subprocess.run(["lsblk", "-o", "NAME,SIZE"], capture_output=True, text=True)    
+        parts = re.search(r'mmcblk1\s+(\w+)', output.stdout, re.IGNORECASE)
+        print(parts)
+        RaW = parts.group(1)
+        if len(RaW) >= 1:
+           return parts[0][:6], parts[1]
+        return "NOT THERE"
     except Exception as e:
-        return ("NA", "NA", "NA", "NA")
-SDname, SDname2, Sname3, SDsize = SDcard()
-#print("SD Card Name:", SDname)
-#print("Size:", SDsize)
+        return ("NA", "NA")
+SDname, SDsize = SDcard()
+print("SD Card Name:", SDname)
+print("Size:", SDsize)
 
 
 Time = datetime.now().isoformat()
