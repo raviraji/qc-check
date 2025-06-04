@@ -152,8 +152,8 @@ def SDcard():
     except Exception as e:
         return ("NA", "NA")
 SDname, SDsize = SDcard()
-print("SD Card Name:", SDname)
-print("Size:", SDsize)
+#print("SD Card Name:", SDname)
+#print("Size:", SDsize)
 
 
 Time = datetime.now().isoformat()
