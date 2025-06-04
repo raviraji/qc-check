@@ -14,6 +14,7 @@ def import_module():
            import psutil
     return psutil
 psutil = import_module()
+import psutil
 url = "http://india.remoteiot.com:30060/upload"
 def get_device_name():
     config_path = "/etc/remote-iot/configure"
