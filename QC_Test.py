@@ -10,7 +10,7 @@ def import_module():
     try:
         import psutil
     except ImportError:
-           subprocess.check_call([sys.executable, "-m", "pip", "install", "psutil"])
+           subprocess.check_call([sys.executable, "-m", "pip3", "install", "psutil"])
            import psutil
     return psutil
 psutil = import_module()
