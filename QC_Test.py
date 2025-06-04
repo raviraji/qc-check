@@ -16,18 +16,18 @@ def get_device_name():
                     return line.strip().split("=", 1)[1]
         return "Name not found"
     except Exception as e:
-        return f"Error: {e}"
+        return "NA"
 device_name = get_device_name()
 #print("Device Name:", device_name)
 
 def ltecheck():
-    lte = psutil.net_if_stats()
-    if 'wwan0' in lte:
-        is_up = lte['wwan0'].isup
+    lte_Raw = psutil.net_if_stats()
+    if 'wwan0' in lte_Raw:
+        is_up = lte_Raw['wwan0'].isup
         lout = f"LTE {'OK' if is_up else 'NOT OK'}"
-
+        return lout
     else:
-        lout = "NA"
+        return "NA"
     return lout
 
 lte = ltecheck()
@@ -42,17 +42,12 @@ hostname = Host_name()
 
 def iMX_Module():
     try:
-        output = subprocess.check_output(["lscpu"], text=True)
-        for line in output.splitlines():
-            if line.startswith("Model name:"):
-                model = line.split(":", 1)[1].strip()
-                if "Cortex-A7" in model:
-                    return "IMX7"
-                else:
-                    return "IMX8"
-        return "Unknown"
+        path = "/sys/devices/soc0/soc_id"
+        with open(path, "r") as file:
+            return file.read().strip()
+        return "TV or Other"
     except Exception as e:
-        return f"Error: {e}"
+        return "NA"
 iMX = iMX_Module()
 #print("iMX Status:",iMX)
 
@@ -61,7 +56,7 @@ def iMX_Serial():
     config_path1 = "/sys/devices/soc0/soc_uid"
     try:
         vALID = iMX_Module()
-        if vALID == "IMX7":
+        if vALID == "i.MX7MM":
            with open(config_path, "r") as file:
              for line in file:
                  if line.startswith("Serial"):
@@ -143,18 +138,20 @@ LTE_Module = Lte_module()
 def SDcard():
     try:
         output = subprocess.run(["lsblk", "-o", "NAME,SIZE"], capture_output=True, text=True)    
-        parts = re.search(r'mmcblk1\s+(\w+)', output.stdout, re.IGNORECASE)
-        print(parts)
-        RaW = parts.group(1)
-        if len(RaW) >= 1:
-           return parts[0][:6], parts[1]
-        return "NOT THERE"
+        parts = re.search(r'(mmcblk1|sda)\s+([^\s]+)', output.stdout, re.IGNORECASE)
+        if parts:
+             RaW = parts.group(1)
+             RaW2 = parts.group(2)
+             if RaW == "mmcblk1":
+                 return RaW[:6], RaW2
+             else:
+                 return RaW, RaW2
+        return ("Not Available", "Not Available")
     except Exception as e:
         return ("NA", "NA")
 SDname, SDsize = SDcard()
 #print("SD Card Name:", SDname)
 #print("Size:", SDsize)
-
 
 Time = datetime.now().isoformat()
 payload = {
