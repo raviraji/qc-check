@@ -1,7 +1,6 @@
 import requests
 import socket
 from datetime import datetime
-import psutil
 import subprocess
 from datetime import datetime
 import time
