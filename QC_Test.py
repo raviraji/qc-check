@@ -1,16 +1,16 @@
 import requests
 import socket
 from datetime import datetime
-import subprocess
 from datetime import datetime
 import time
 import re
 import sys
+import subprocess
 def import_module():
     try:
         import psutil
     except ImportError:
-           subprocess.check_call([sys.executable, "-m", "pip3", "install", "psutil"])
+           subprocess.check_call([sys.executable, "-m", "pip", "install", "psutil"])
            import psutil
     return psutil
 psutil = import_module()
