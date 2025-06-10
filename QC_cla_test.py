@@ -94,7 +94,10 @@ class DeviceInfo:
             output = subprocess.run(["lsblk", "-o", "NAME,SIZE"], capture_output=True, text=True)
             match = re.search(r'(mmcblk1|sda)\s+([^\s]+)', output.stdout)
             if match:
-                return match.group(1), match.group(2)
+                if match.group(1) == "mmcblk1":
+                   return "PCBA Mount", match.group(2)
+                else:
+                   return "SD reader Type", match.group(2)
             return ("Not Available", "Not Available")
         except Exception:
             return ("NA", "NA")
