@@ -62,17 +62,17 @@ class DeviceInfo:
         modem = self.get_modem_id()
         if modem:
             return subprocess.run(["mmcli", "-m", modem], capture_output=True, text=True).stdout
-        return ""
+        return "NOT AVAILABLE"
 
     def get_lte_imei(self):
         output = self.get_mmcli_output()
         match = re.search(r'equipment id:\s+(\w+)', output, re.IGNORECASE)
-        return match.group(1) if match else "Not There"
+        return match.group(1) if match else "Not Available"
 
     def get_sim_number(self):
         output = self.get_mmcli_output()
         match = re.search(r'own:\s+(\w+)', output, re.IGNORECASE)
-        return match.group(1) if match else "Not There"
+        return match.group(1) if match else "Not Available"
 
     def get_signal_quality(self):
         output = self.get_mmcli_output()
@@ -82,12 +82,12 @@ class DeviceInfo:
     def get_operator_name(self):
         output = self.get_mmcli_output()
         match = re.search(r'operator name:\s+(\w+)', output, re.IGNORECASE)
-        return match.group(1) if match else "Not There"
+        return match.group(1) if match else "Not Available"
 
     def get_lte_module_type(self):
         output = self.get_mmcli_output()
         match = re.search(r'revision:\s+(\w+)', output, re.IGNORECASE)
-        return match.group(1)[:5] if match else "Not there"
+        return match.group(1)[:5] if match else "Not Available"
 
     def get_sd_info(self):
         try:
